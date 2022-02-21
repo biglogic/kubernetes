@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  containers:
+  - image: test_img1
+    name: nginx
+    volumeMounts:
+    - mountPath: /var/log/app
+      name: volume
+    imagePullPolicy: IfNotPresent
+  volumes:
+  - name: volume
+    hostPath:
+      path: /var/log/app

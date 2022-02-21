@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluentd
+  namespace: kube-system
+  labels:
+    k8s-app: fluentd-logging
+    version: v1
+    kubernetes.io/cluster-service: "true"
+spec:
+  selector:
+     matchLabels:
+             k8s-app: fluentd-logging
+  template:
+    metadata:
+      labels:
+        k8s-app: fluentd-logging
+        version: v1
+        kubernetes.io/cluster-service: "true"
+    spec:
+      serviceAccount: fluentd
+      serviceAccountName: fluentd
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      initContainers:
+        - name: copy-plugins
+          image: fluent/fluentd-kubernetes-daemonset:v1.14.3-debian-cloudwatch-1.0
+          volumeMounts:
+             - name: plugins
+               mountPath: /etc/fluent/plugin  
+      containers:
+      - name: fluentd
+        image: fluent/fluentd:v1.8.1-debian-1.0  
+        #command: ["gem install fluent-plugin-cloudwatch-logs"]
+        env: 
+           - name: AWS_ACCESS_KEY_ID
+             value: 
+           - name: AWS_SECRET_ACCESS_KEY
+             value: 
+           - name: AWS_REGION
+             value:            
+        volumeMounts:
+        - name: config-volume
+          mountPath: /fluentd/etc/kubernetes.conf
+          subPath: kubernetes.conf
+        - name: varlog
+          mountPath: /var/log
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+        - name: plugins
+          mountPath: /etc/fluent/plugin    
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: config-volume
+        configMap:
+          name: fluentd-conf
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: varlibdockercontainers
+        hostPath:
+           path: /var/lib/docker/containers
+      - name: plugins
+        hostPath: 
+            path: /etc/fluent/plugin        
