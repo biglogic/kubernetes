@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elastic  
+  namespace: game-2048  
+  labels:
+     app: elastic1
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: elastic
+  replicas: 3
+  template:
+    metadata:
+      name: elasctic-search
+      labels:
+        app: elastic
+    spec:
+      containers:
+      - name: elastic
+        image: elasticsearch:7.8.0
+        ports:
+        - containerPort: 9200
+        volumeMounts:
+        - mountPath: "/usr/share/elasticsearch/data"
+          name: task-pv-storage  
+        env:
+          - name: discovery.type 
+            value: "single-node"
+      volumes:
+           - name: task-pv-storage
+             persistentVolumeClaim:
+                claimName: elastic-pvc 
+              
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: game-2048
+  name: elastic
+spec:
+  ports:
+    - port: 9200
+      targetPort: 9200
+      protocol: TCP
+  type: NodePort
+  selector:
+    name: elasctic-search
+
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  namespace: game-2048
+  name: pv
+spec:
+  accessModes:
+  - ReadWriteOnce
+  awsElasticBlockStore:
+    fsType: ext4
+    volumeID: aws://us-east-1c/vol-094324a824f0f72fe
+  capacity:
+    storage: 10Gi
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: gp2
+  volumeMode: Filesystem
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: game-2048
+  labels:
+    app: elastic-pvc
+  name: elastic-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: gp2
+  volumeMode: Filesystem
+  volumeName: pv
+

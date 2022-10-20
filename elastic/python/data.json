@@ -1,0 +1,18 @@
+{
+   "kubernetes":[
+        { "ns":"es-sandboxppfa",
+          "kube_service" : "elasticsearch-master",
+          "pvcname":["data-elasticsearch-master-0","data-elasticsearch-master-1","data-elasticsearch-master-2"],
+          "pvname":["pvc-63f740df-f102-4f3f-a103-9a97eb6afe5b","pvc-d73a4065-2217-41bf-8d1c-b17cc28249cb","pvc-8b4e369e-b8f6-46cb-9292-91375fc0ab5b"],
+          "storage":["10Gi","10Gi","10Gi"],
+          "storageclaim":["10Gi","10Gi","10Gi"],
+          "storageclassName":["ssd-storage","ssd-storage","ssd-storage"],
+          "A_zone" : ["us-east-1b","us-east-1a","us-east-1b"],
+          "kskind" : "sts",
+          "fstype":["ext4","ext4","ext4"],
+          "volumeId":["vol-0abac6b20c1bfbd16","vol-0b1ea59d5a123cdf5","vol-0455388e489edbd0a"],
+          "replicas":"3" 
+        }
+
+    ]
+}
